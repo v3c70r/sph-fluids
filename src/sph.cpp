@@ -126,6 +126,30 @@ inline void SphFluidSolver::add_forces(Particle &particle, Particle &neighbour) 
 	neighbour.color_laplacian += particle.mass / particle.density * value;
 }
 
+/*
+ * Add normal to particle
+ */
+inline void SphFluidSolver::add_normal(Particle &particle, Particle &neighbour) {
+	if (particle.id >= neighbour.id) {
+		return;
+	}
+	Vector3f r = particle.position - neighbour.position;
+	if (dot(r, r) > SQR(core_radius)) {
+		return;
+	}
+    particle.normal += gradient_kernel(r, core_radius) * neighbour.mass/neighbour.density;
+}
+
+/*
+ * Add all normals together
+ */
+void SphFluidSolver::sum_normals(GridElement &grid_element, Particle &particle) {
+	list<Particle>  &plist = grid_element.particles;
+	for (list<Particle>::iterator piter = plist.begin(); piter != plist.end(); piter++) {
+		add_normal(particle, *piter);
+	}
+}
+
 void SphFluidSolver::sum_forces(GridElement &grid_element, Particle &particle) {
 	list<Particle>  &plist = grid_element.particles;
 	for (list<Particle>::iterator piter = plist.begin(); piter != plist.end(); piter++) {
@@ -158,8 +182,10 @@ void SphFluidSolver::update_forces(int i, int j, int k) {
 }
 
 inline void SphFluidSolver::update_particle(Particle &particle) {
-	if (length(particle.color_gradient) > 0.001f) {
-		particle.force +=   -material.sigma * particle.color_laplacian
+    particle.isSurface = false;
+	if (length(particle.color_gradient) > 0.3f) {
+        particle.isSurface = true;
+		particle.force +=   -material.sigma * particle.color_laplacian      //Surface tension
 		                  * normalize(particle.color_gradient);
 	}
 

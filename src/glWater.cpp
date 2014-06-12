@@ -8,7 +8,7 @@
 using namespace std;
 
 #define WIDTH		20
-#define HEIGHT		15
+#define HEIGHT		45
 #define DEPTH		20
 
 
@@ -28,7 +28,7 @@ Vector3f gravity_direction;
 
 int simulation_steps = 2;
 
-const int particle_count = 2000;
+const int particle_count = 5000;
 
 #define SCENE 1
 
@@ -79,9 +79,18 @@ void init_liquid() {
 }
 
 void draw_particle(Particle &particle) {
+
+    double nLength = length(particle.color_gradient);
 	Vector3f p = scale * particle.position;
 	glTranslatef(+p.x, +p.y, +p.z);
-	glCallList(sphereId);
+
+    //std::cout<<nLength<<std::endl;
+    
+    if (particle.isSurface) {
+        glColor3ub(255, 0, 0);
+        glutSolidSphere(0.2, 3, 3);
+    }
+	//glCallList(sphereId);
 #if 0
 	glDisable(GL_LIGHTING);
 	glBegin(GL_LINES);
@@ -173,8 +182,10 @@ void init() {
 
 	glEnable(GL_DEPTH_TEST);
 
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
+	//glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHT0);
+    //glEnable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
 
 	sphereId = glGenLists(1);
 	glNewList(sphereId, GL_COMPILE);
@@ -293,6 +304,7 @@ void display() {
 	}
 
 	gettimeofday(&tv1, NULL);
+    
 	solver.foreach_particle(draw_particle);
 	gettimeofday(&tv2, NULL);
 	int renderingTime = 1000 * (tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec - tv1.tv_usec) / 1000;

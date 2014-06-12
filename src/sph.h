@@ -25,8 +25,11 @@ struct Particle {
 
 	Vector3f viscosity_force;
 	Vector3f pressure_force;
+    Vector3f normal;
 
-	Particle() { mass = 1.0f; }
+    bool isSurface;
+
+	Particle() { mass = 1.0f; isSurface = false;}
 };
 
 struct GridElement {
@@ -87,7 +90,7 @@ public:
 
 	}
 
-	void update(void(*inter_hook)() = NULL, void(*post_hook)() = NULL);
+	void update(void(*inter_hook)() = 0, void(*post_hook)() = 0);
 
 	void init_particles(Particle *particles, int count);
 
@@ -129,7 +132,11 @@ private:
 
 	void add_forces(Particle &particle, Particle &neighbour);
 
+	void add_normal(Particle &particle, Particle &neighbour);
+
 	void sum_forces(GridElement &grid_element, Particle &particle);
+
+	void sum_normals(GridElement &grid_element, Particle &particle);
 
 	void sum_all_forces(int i, int j, int k, Particle &particle);
 
