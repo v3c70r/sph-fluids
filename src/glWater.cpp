@@ -12,6 +12,7 @@ using namespace std;
 #define WIDTH		20
 #define HEIGHT		45
 #define DEPTH		20
+#define PI          3.1415926
 
 //Shaders
 VSMathLib *vsml=NULL;
@@ -98,8 +99,23 @@ void init_liquid() {
 	}
 }
 
-void draw_splatting_surface(Particle &particle, double length)
+void draw_splatting_surface(Particle &particle, double r)
 {
+    Vector3f normal = -particle.color_gradient/length(particle.color_gradient);
+    Vector3f v(0, sqrt(normal.z*normal.z*r*r/(normal.y*normal.y+1)), sqrt(r * r - (normal.z*normal.z * r * r/(normal.y*normal.y+1))));
+    v = v/length(v);
+    double step = 0.4;
+    for (double i=0.0; i * step < 2*PI; i++){
+        glBegin(GL_TRIANGLES);
+            glVertex3f(0.0, 0.0, 0.0);
+            glVertex3f(r * cos(i) * v.x + r*sin(i)*v.x,
+                    r * cos(i) * v.y + r*sin(i)*v.y,
+                    r * cos(i) * v.z + r*sin(i)*v.z);
+            glVertex3f(r * cos(i+step) * v.x + r*sin(i+step)*v.x,
+                    r * cos(i+step) * v.y + r*sin(i+step)*v.y,
+                    r * cos(i+step) * v.z + r*sin(i+step)*v.z);
+        glEnd();
+    }
 }
 
 void draw_particle(Particle &particle) {
@@ -111,10 +127,11 @@ void draw_particle(Particle &particle) {
 
     //std::cout<<nLength<<std::endl;
     if (particle.isSurface){
+        draw_splatting_surface(particle, 10);
     
-        glColor3ub(255, 0, 0);
-        glutSolidSphere(0.2, 3, 3);
-        glColor3ub(255, 255, 0);
+        //glColor3ub(255, 0, 0);
+        //glutSolidSphere(0.2, 3, 3);
+        //glColor3ub(255, 255, 0);
         //Draw normals
         glBegin(GL_LINES);
         glVertex3f(0,0,0);
