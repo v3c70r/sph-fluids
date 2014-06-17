@@ -101,21 +101,16 @@ void init_liquid() {
 
 void draw_splatting_surface(Particle &particle, double r)
 {
-    Vector3f normal = -particle.color_gradient/length(particle.color_gradient);
-    Vector3f v(0, sqrt(normal.z*normal.z*r*r/(normal.y*normal.y+1)), sqrt(r * r - (normal.z*normal.z * r * r/(normal.y*normal.y+1))));
-    v = v/length(v);
-    double step = 0.4;
-    for (double i=0.0; i * step < 2*PI; i++){
-        glBegin(GL_TRIANGLES);
-            glVertex3f(0.0, 0.0, 0.0);
-            glVertex3f(r * cos(i) * v.x + r*sin(i)*v.x,
-                    r * cos(i) * v.y + r*sin(i)*v.y,
-                    r * cos(i) * v.z + r*sin(i)*v.z);
-            glVertex3f(r * cos(i+step) * v.x + r*sin(i+step)*v.x,
-                    r * cos(i+step) * v.y + r*sin(i+step)*v.y,
-                    r * cos(i+step) * v.z + r*sin(i+step)*v.z);
-        glEnd();
-    }
+    Vector3f parNormal = -particle.color_gradient/length(particle.color_gradient);
+    Vector3f normal(0,0,1);
+    double MatRot[16];
+    
+    glBegin(GL_TRIANGLES);
+        glVertex3f(0,1,0);
+        glVertex3f(-0.866, -0.5, 0);
+        glVertex3f(0.866, -0.5, 0);
+    glEnd();
+
 }
 
 void draw_particle(Particle &particle) {
