@@ -25,7 +25,6 @@ struct Particle {
 
 	Vector3f viscosity_force;
 	Vector3f pressure_force;
-    Vector3f normal;
 
     bool isSurface;
 
@@ -132,11 +131,9 @@ private:
 
 	void add_forces(Particle &particle, Particle &neighbour);
 
-	void add_normal(Particle &particle, Particle &neighbour);
 
 	void sum_forces(GridElement &grid_element, Particle &particle);
 
-	void sum_normals(GridElement &grid_element, Particle &particle);
 
 	void sum_all_forces(int i, int j, int k, Particle &particle);
 

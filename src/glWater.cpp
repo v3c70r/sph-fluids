@@ -1,6 +1,8 @@
 #include <iostream>
 #include <sys/time.h>
 #include <cstdio>
+#include <vsShaderLib.h>
+#include <vsMathLib.h>
 #include <GL/glut.h>
 
 #include "sph.h"
@@ -10,6 +12,10 @@ using namespace std;
 #define WIDTH		20
 #define HEIGHT		45
 #define DEPTH		20
+
+//Shaders
+VSMathLib *vsml=NULL;
+VSShaderLib particleShader;
 
 
 int wndWidth = 700, wndHeight = 700;
@@ -53,6 +59,20 @@ float collision_restitution = 1.0f;
 #endif
 
 
+void initVSL()
+{
+    vsml = VSMathLib::getInstance();
+    vsml->setUniformBlockName("Matrices");
+    vsml->setUniformName(VSMathLib::PROJ_VIEW_MODEL, "m_pvm");
+    vsml->setUniformName(VSMathLib::NORMAL, "m_normal");
+    vsml->setUniformName(VSMathLib::VIEW_MODEL, "m_viewModel");
+    vsml->setUniformName(VSMathLib::VIEW, "m_view");
+    //Normalize all vectors
+    vsml->loadIdentity(VSMathLib::VIEW);
+    vsml->loadIdentity(VSMathLib::MODEL);
+    vsml->loadIdentity(VSMathLib::PROJECTION);
+}
+
 
 void init_liquid() {
 	Particle *particles = new Particle[particle_count];
@@ -78,17 +98,28 @@ void init_liquid() {
 	}
 }
 
+void draw_splatting_surface(Particle &particle, double length)
+{
+}
+
 void draw_particle(Particle &particle) {
 
-    double nLength = length(particle.color_gradient);
+    //double nLength = length(particle.color_gradient);
 	Vector3f p = scale * particle.position;
+    Vector3f normal = -particle.color_gradient;
 	glTranslatef(+p.x, +p.y, +p.z);
 
     //std::cout<<nLength<<std::endl;
+    if (particle.isSurface){
     
-    if (particle.isSurface) {
         glColor3ub(255, 0, 0);
         glutSolidSphere(0.2, 3, 3);
+        glColor3ub(255, 255, 0);
+        //Draw normals
+        glBegin(GL_LINES);
+        glVertex3f(0,0,0);
+        glVertex3f(normal.x*3, normal.y*3, normal.z*3);
+        glEnd();
     }
 	//glCallList(sphereId);
 #if 0

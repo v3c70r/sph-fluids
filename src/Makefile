@@ -2,7 +2,7 @@
 VSL_INC=-I./VSL/VSL/include
 INCLUDES=$(VSL_INC)
 #libs
-OPENGL_LIBS=-lGL -lGLU -lglut -lGLEW
+OPENGL_LIBS=-L/usr/lib/nvidia-331 -lGL -lGLU -lglut -lGLEW
 IL_LIBS=-lIL
 TINYXML_LIBS = -ltinyxml
 ASSIMP_LIBS = `pkg-config --libs assimp`
