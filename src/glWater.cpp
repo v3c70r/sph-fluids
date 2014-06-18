@@ -4,6 +4,7 @@
 #include <vsShaderLib.h>
 #include <vsMathLib.h>
 #include <GL/glut.h>
+#include <armadillo>
 
 #include "sph.h"
 
@@ -35,7 +36,7 @@ Vector3f gravity_direction;
 
 int simulation_steps = 2;
 
-const int particle_count = 5000;
+const int particle_count = 1000;
 
 #define SCENE 1
 
@@ -102,13 +103,39 @@ void init_liquid() {
 void draw_splatting_surface(Particle &particle, double r)
 {
     Vector3f parNormal = -particle.color_gradient/length(particle.color_gradient);
-    Vector3f normal(0,0,1);
-    double MatRot[16];
+    arma::vec3 vParNormal{parNormal.x, parNormal.y, parNormal.z};
+    arma::vec3 vNormal{0, 0, 1};
+
+    arma::vec3 aix = arma::cross(vNormal, vParNormal);
+    aix = -aix/arma::norm(aix);
+    double a = acos(arma::dot(vNormal, vParNormal));
+    //arma::mat MatRot
+    //    {cos(a)+aix(0)*aix(0)*(1-cos(a)), aix(0)*aix(1)*(1-cos(a))-aix(2)*sin(a), aix(0)*aix(2)*(1-cos(a))+aix(1)*sin(a), 
+    //    aix(1)*aix(0)*(1-cos(a))+aix(2)*sin(a), aix(1)*aix(1)+cos(a)*(1-aix(1)*aix(1)), aix(1)*aix(2)*(1-cos(a))-aix(0)*sin(a), 
+    //    aix(0)*aix(2)*(1-cos(a))-aix(1)*sin(a), aix(1)*aix(2)*(1-cos(a))+aix(0)*sin(a), aix(2)*aix(2)+cos(a)*(1-aix(2)*aix(2))};
+    arma::mat MatRot
+    {
+        aix(0)*aix(0)+cos(a)*(1-aix(0)*aix(0)), aix(0)*aix(1)*(1-cos(a))-aix(2)*sin(a), aix(0)*aix(2)*(1-cos(a))+aix(1)*sin(a),
+        aix(0)*aix(1)*(1-cos(a))+aix(2)*sin(a), aix(1) * aix(1) + cos(a) * (1-aix(1)*aix(1)), aix(1)*aix(2)*(1-cos(a))-aix(0)*sin(a),
+        aix(0)*aix(2)*(1-cos(a))-aix(1)*sin(a), aix(1)*aix(2)*(1-cos(a))+aix(0)*sin(a), aix(2)*aix(2)+cos(a)*(1-aix(2)*aix(2))
+    };
+
+    MatRot.reshape(3, 3);
+    MatRot.t();
+
+    arma::vec3 v1{0, 1, 0};
+    arma::vec3 v2{-0.866, -0.5, 0};
+    arma::vec3 v3{0.866, -0.5, 0};
+
+    v1 = MatRot*v1;
+    v2 = MatRot*v2;
+    v3 = MatRot*v3;
     
     glBegin(GL_TRIANGLES);
-        glVertex3f(0,1,0);
-        glVertex3f(-0.866, -0.5, 0);
-        glVertex3f(0.866, -0.5, 0);
+        glVertex3f(v1(0), v1(1), v1(2));
+        glVertex3f(v2(0), v2(1), v2(2));
+        glVertex3f(v3(0), v3(1), v3(2));
+        glNormal3f(parNormal.x, parNormal.y, parNormal.z);
     glEnd();
 
 }
@@ -121,7 +148,9 @@ void draw_particle(Particle &particle) {
 	glTranslatef(+p.x, +p.y, +p.z);
 
     //std::cout<<nLength<<std::endl;
-    if (particle.isSurface){
+    if (particle.isSurface)
+    {
+        //glutSolidSphere(0.3, 20, 20);
         draw_splatting_surface(particle, 10);
     
         //glColor3ub(255, 0, 0);
@@ -221,14 +250,15 @@ void extract_gravity_direction() {
 }
 
 void init() {
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 
 	glEnable(GL_DEPTH_TEST);
 
-	//glEnable(GL_LIGHTING);
-	//glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
     //glEnable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 
 	sphereId = glGenLists(1);
 	glNewList(sphereId, GL_COMPILE);
@@ -242,7 +272,7 @@ void reshape(int width, int height) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	//glOrtho(-0.1 * WIDTH, 1.1 * WIDTH, +0.1 * HEIGHT, -1.1 * HEIGHT, 1.0, 1000.0);
-	gluPerspective(55.0, 1.0, 1.0, 1000.0);
+	gluPerspective(55.0, 1.0, 1.0, 2000.0);
 
 	wndWidth = width;
 	wndHeight = height;

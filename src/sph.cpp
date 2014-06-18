@@ -160,7 +160,7 @@ void SphFluidSolver::update_forces(int i, int j, int k) {
 
 inline void SphFluidSolver::update_particle(Particle &particle) {
     particle.isSurface = false;
-	if (length(particle.color_gradient) > 0.3f) {
+	if (length(particle.color_gradient) > 0.2f) {
         particle.isSurface = true;
 		particle.force +=   -material.sigma * particle.color_laplacian      //Surface tension
 		                  * normalize(particle.color_gradient);

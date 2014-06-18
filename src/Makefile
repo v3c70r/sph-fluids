@@ -3,10 +3,12 @@ VSL_INC=-I./VSL/VSL/include
 INCLUDES=$(VSL_INC)
 #libs
 OPENGL_LIBS=-L/usr/lib/nvidia-331 -lGL -lGLU -lglut -lGLEW
+
 IL_LIBS=-lIL
+ARMAR_LIBS=-larmadillo
 TINYXML_LIBS = -ltinyxml
 ASSIMP_LIBS = `pkg-config --libs assimp`
-LIBS=$(OPENGL_LIBS) $(IL_LIBS) $(TINYXML_LIBS) $(ASSIMP_LIBS)
+LIBS=$(OPENGL_LIBS) $(IL_LIBS) $(TINYXML_LIBS) $(ASSIMP_LIBS) $(ARMAR_LIBS)
 
 CFLAGS= -std=c++11 -g -Wall -DNDEBUG 
 CC = g++
