@@ -19,6 +19,10 @@ using namespace std;
 VSMathLib *vsml=NULL;
 VSShaderLib particleShader;
 
+//VAO VBO
+GLuint buffers[4];
+GLuint vao;
+
 
 int wndWidth = 700, wndHeight = 700;
 
@@ -37,6 +41,15 @@ Vector3f gravity_direction;
 int simulation_steps = 2;
 
 const int particle_count = 1000;
+GLfloat verticesBuffer[4 * particle_count];
+GLint vertexOffset = 4;     
+
+GLfloat texCoordsBuffer[2 * particle_count];
+GLint texOffset = 2;
+GLfloat normalsBuffer[3 * particle_count];
+GLint normalOffset = 3;
+GLint indexBuffer[particle_count];
+GLint indexOffset = 1;
 
 #define SCENE 1
 
@@ -61,6 +74,38 @@ float collision_restitution = 1.0f;
 #endif
 
 
+void initVBO()
+{
+    glGenBuffers(4, buffers);
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    //Vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * particle_count * vertexOffset, verticesBuffer, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(VSShaderLib::VERTEX_COORD_ATTRIB);
+    glVertexAttribPointer(VSShaderLib::VERTEX_COORD_ATTRIB, vertexOffset, GL_FLOAT, 0, 0, 0);
+
+    //Texture Buffer
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * particle_count * texOffset, texCoordsBuffer, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(VSShaderLib::TEXTURE_COORD_ATTRIB);
+    glVertexAttribPointer(VSShaderLib::TEXTURE_COORD_ATTRIB, vertexOffset, GL_FLOAT, 0, 0, 0);
+
+    //Normal Buffer
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * particle_count * normalOffset, normalsBuffer, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(VSShaderLib::NORMAL_ATTRIB);
+    glVertexAttribPointer(VSShaderLib::NORMAL_ATTRIB, normalOffset, GL_FLOAT, 0, 0, 0);
+
+    //Index Buffer
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[3]);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLint) * faceIndexSize, faceIndex, GL_STATIC_DRAW);
+
+
+}
+
+    
 void initVSL()
 {
     vsml = VSMathLib::getInstance();
@@ -74,6 +119,7 @@ void initVSL()
     vsml->loadIdentity(VSMathLib::MODEL);
     vsml->loadIdentity(VSMathLib::PROJECTION);
 }
+
 
 
 void init_liquid() {
@@ -150,8 +196,8 @@ void draw_particle(Particle &particle) {
     //std::cout<<nLength<<std::endl;
     if (particle.isSurface)
     {
-        //glutSolidSphere(0.3, 20, 20);
-        draw_splatting_surface(particle, 10);
+        glutSolidSphere(0.3, 20, 20);
+        //draw_splatting_surface(particle, 10);
     
         //glColor3ub(255, 0, 0);
         //glutSolidSphere(0.2, 3, 3);
